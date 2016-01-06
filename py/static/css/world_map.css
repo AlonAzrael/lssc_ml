@@ -1,0 +1,31 @@
+
+body {
+	margin: 0px;
+}
+
+#world_container {
+	perspective: 3000px;
+	display: block;
+}
+
+#world_map {
+	width: 800px;
+	height: 600px;
+	background-image: url("http://localhost:9100/static/img/test.map.jpg");
+	background-size: 1200px 800px;
+	background-repeat: no-repeat;
+	background-position: 10px 50px;
+	/*transform: rotateX(50deg);*/
+	left: 0px;
+	top: 0px;
+	position: absolute;
+}
+
+#world_map .map_img{
+	transform: rotateX(40deg) ;
+	/*translate: translate(100,100,100);*/
+	width: 720px;
+	height: 720px;
+	overflow: hidden;
+}
+

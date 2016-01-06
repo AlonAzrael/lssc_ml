@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>To Update</title>
+    <style type="text/css">
+            
+        .main_ui {
+            width: 550px;
+            margin-left: 10px;
+            float:left;
+        }
+
+        .ui_menu {
+            margin-top:10px;
+        }
+
+        .ui_row {
+            margin-top:20px;
+        }
+
+        canvas { 
+            border: 1px solid #ccc;
+        }
+
+        .ui_menu button {
+            width: 100px;
+            height: 30px;
+        }
+
+        .ui_menu .input_box {
+            width: 100px;
+            height: 20px;
+        }
+
+        .ui_menu .input_radio {
+            width: 20px;
+            height: 20px;
+        }
+
+        .sample_img {
+            width: 50px;
+            height: auto;
+            margin-left: 2px;
+            border-style: solid;
+            border-width: 2px;
+            border-color: black;
+        }
+
+    </style>
+</head>
+<body style="width:1280px; padding:0; margin: 0; background: ;">
+    
+    <div class="main_ui" style="">
+
+        <div class="ui_menu">
+            <button id="clear_canvas_btn">clear</button>
+            <button id="send_canvas_btn">send</button>
+            <button id="train_samples_btn">train</button>
+            <!-- <input type="radio" class="input_radio" name="image_type" value="sample"> Sample</input>
+            <input type="radio" class="input_radio" name="image_type" value="std">Std</input> -->
+        </div>
+        <div class="ui_menu">
+            <label>enter sample label here</label>
+            <input id="canvas_label_input" class="input_box"></input>
+            <label>and cur label is: </label>
+            <label id="canvas_cur_label"></label>
+        </div>
+
+        <div class="ui_row">
+            <canvas id="main_canvas" width="400" height="400"></canvas>
+        </div>
+
+        <div id="sample_labels" class="ui_row">
+        </div>
+
+    </div>
+
+    <div class="main_ui" >
+        <div class="ui_menu">
+            <button id="clear_predict_canvas_btn">clear</button>
+            <button id="send_predict_canvas_btn">send</button>
+        </div>
+        <div class="ui_menu">
+            <label>draw something and then system will predict label: </label>
+            <label id="predict_label"></label>
+        </div>
+        <div class="ui_row">
+            <canvas id="predict_canvas" width="400" height="400"></canvas>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="static/js/main_canvas.js"></script>
+    <script type="text/javascript" src="static/js/snakefoot.js"></script>
+    <script type="text/javascript" src="static/js/lssc_client.js"></script>
+
+    <script type="text/javascript">
+
+function print (argument) {
+    
+    console.log.apply(console, arguments)
+}
+
+var USER_ID = null
+LSSC_CLIENT.create_user()
+
+CUR_LABEL = 0
+function set_cur_label (label) {
+    CUR_LABEL = label
+}
+function get_cur_label () {
+    return CUR_LABEL
+}
+
+CANVAS_DICT = {
+    main_canvas: setup_canvas("main_canvas"),
+    predict_canvas: setup_canvas("predict_canvas"),
+}
+main_canvas = CANVAS_DICT["main_canvas"]
+predict_canvas = CANVAS_DICT["predict_canvas"]
+
+
+$(document).ready(function () {
+
+    var label_dict = {}
+    
+    $("#clear_canvas_btn").click(function () {
+        refresh_canvas(CANVAS_DICT["main_canvas"])
+    })
+    $("#clear_predict_canvas_btn").click(function () {
+        refresh_canvas(CANVAS_DICT["predict_canvas"])
+    })
+
+    $("#canvas_label_input").keyup(function (evt) {
+        if(evt.keyCode == 13) {
+            var label = $(this).val()
+            
+            if (!label_dict.hasOwnProperty(label)) {
+                var sample_labels = $("#sample_labels")
+                sample_labels.append("<p>label "+label+":</p>")
+                sample_labels.append("<div class='sample_label' id='sample_label_"+label+"'></div>")
+                label_dict[label] = 0
+            }
+
+            $(this).val("")
+            $("#canvas_cur_label").html(label)
+            set_cur_label(label)
+        }
+    })
+
+    var send_canvas = function () {
+        // var image = ctx.getImageData(0,0,main_canvas.width,main_canvas.height)
+        var dataURL = main_canvas.toDataURL("image/jpeg", 1.0)
+        var label = get_cur_label()
+        LSSC_CLIENT.user_upload(dataURL, label, function (result) {
+            $("#clear_canvas_btn").trigger("click")
+            var sample_label = $("#sample_label_"+label)
+            var image_id = "sample_img_"+result.image_id
+            var img_data = dataURL
+            var sample_img = $(`<img class="sample_img" id="${image_id}" src="${img_data}"></img>`)
+            sample_label.append(sample_img)
+            
+            sample_img.dblclick(function () {
+                LSSC_CLIENT.user_delete(label, result.image_id, function (result) {
+                    $("#"+image_id).remove()
+                })
+            })
+
+        })
+    }
+    $("#send_canvas_btn").click(send_canvas)
+
+    $("#train_samples_btn").click(function () {
+        LSSC_CLIENT.user_train()
+    })
+
+    $("#send_predict_canvas_btn").click(function () {
+        var dataURL = predict_canvas.toDataURL("image/jpeg", 1.0)
+        LSSC_CLIENT.user_predict(dataURL, function (result) {
+            $("#predict_label").html(result.predict_label)
+            $("#clear_predict_canvas_btn").trigger("click")
+        })
+    })
+
+
+    // init
+    // ---------------------------------------
+
+
+    $("input[name='image_type']").click(function () {
+        CUR_IMAGE_TYPE = $(this).val()
+    })
+    $("input[value='sample']").trigger("click")
+    var e = $.Event('keyup')
+    e.keyCode = 13
+    $("#canvas_label_input").val(0).trigger(e)
+
+    for (var key in CANVAS_DICT) {
+        refresh_canvas(CANVAS_DICT[key])
+    }
+})
+    </script>
+
+</body>
+</html>
+
+
+
