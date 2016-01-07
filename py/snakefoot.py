@@ -94,11 +94,6 @@ def Server(rpc_instance):
         snakefoot_server.index()
         return render_template(snakefoot_server.index_page)
 
-    @app.route("/lssc_ml", methods=["GET"])
-    def index():
-        snakefoot_server.index()
-        return render_template(snakefoot_server.index_page)
-
     @app.route("/__snakefoot_rpc_invoke", methods=["POST"])
     def snakefoot_rpc_invoke():
         try:
