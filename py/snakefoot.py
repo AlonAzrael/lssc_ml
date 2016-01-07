@@ -105,17 +105,9 @@ def Server(rpc_instance):
         result = snakefoot_server.invoke(req)
         return response_ok(result)
 
-    @app.route('/static/js/<path:path>')
-    def send_js(path):
-        return send_from_directory('./static/js', path)
-
-    @app.route('/static/css/<path:path>')
-    def send_css(path):
-        return send_from_directory('./static/css', path)
-
-    @app.route('/static/image/<path:path>')
-    def send_image(path):
-        return send_from_directory('./static/image', path)
+    @app.route("/lssc_ml/static/<category>/<path:path>")
+    def send_static_file(category,path):
+        return send_from_directory('./static/{category}'.format(category=category), path)
     
     return snakefoot_server
 
