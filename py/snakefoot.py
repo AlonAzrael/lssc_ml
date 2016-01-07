@@ -105,6 +105,17 @@ def Server(rpc_instance):
         result = snakefoot_server.invoke(req)
         return response_ok(result)
 
+    @app.route("/lssc_ml/__snakefoot_rpc_invoke", methods=["POST"])
+    def snakefoot_rpc_invoke_alias():
+        try:
+            data = request.data
+            req = json.loads(data)
+        except:
+            return response_error("data type error")
+
+        result = snakefoot_server.invoke(req)
+        return response_ok(result)
+
     @app.route("/lssc_ml/static/<category>/<path:path>")
     def send_static_file(category,path):
         return send_from_directory('./static/{category}'.format(category=category), path)
