@@ -19,6 +19,7 @@ class snakefoot_Server():
     def __init__(self, app_instance):
         global app
         app = app_instance
+        self.app = app
 
     def set_rpc_instance(self, instance):
         self.rpc_instance = instance

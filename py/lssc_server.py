@@ -106,9 +106,10 @@ class LSSC_Server():
 
         return {"predict_label": predict_label, "predict_ok": True}
 
-
+s = Server(LSSC_Server())
+app = s.app
 if __name__ == '__main__':
-    s = Server(LSSC_Server())
+    
     s.bind(host="0.0.0.0", port=10088, debug=False)
     s.run()
 
