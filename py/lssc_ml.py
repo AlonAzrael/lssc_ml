@@ -357,7 +357,7 @@ def fit_model_by_dir(sample_dir_or_path):
 	
 	sample_filepath_arr, sample_labels = get_dir_fp_and_label_arr(sample_dir)
 
-	if len(sample_labels)<10:
+	if len(sample_labels)<1000:
 		n_jobs = 1
 	else:
 		n_jobs = 2
