@@ -34,7 +34,7 @@ function snakefoot_Client_C () {
             if (callback_params==undefined) {
                 callback_params = {}
             }
-            send_to_server("/__snakefoot_rpc_invoke", {callback_name:callback_name, callback_params:callback_params,
+            send_to_server("/lssc_ml/__snakefoot_rpc_invoke", {callback_name:callback_name, callback_params:callback_params,
             }, result_callback)
         },
     }
