@@ -94,6 +94,11 @@ def Server(rpc_instance):
         snakefoot_server.index()
         return render_template(snakefoot_server.index_page)
 
+    @app.route("/lssc_ml", methods=["GET"])
+    def index():
+        snakefoot_server.index()
+        return render_template(snakefoot_server.index_page)
+
     @app.route("/__snakefoot_rpc_invoke", methods=["POST"])
     def snakefoot_rpc_invoke():
         try:
@@ -105,15 +110,15 @@ def Server(rpc_instance):
         result = snakefoot_server.invoke(req)
         return response_ok(result)
 
-    @app.route('/js/<path:path>')
+    @app.route('/static/js/<path:path>')
     def send_js(path):
         return send_from_directory('./static/js', path)
 
-    @app.route('/css/<path:path>')
+    @app.route('/static/css/<path:path>')
     def send_css(path):
         return send_from_directory('./static/css', path)
 
-    @app.route('/image/<path:path>')
+    @app.route('/static/image/<path:path>')
     def send_image(path):
         return send_from_directory('./static/image', path)
     
