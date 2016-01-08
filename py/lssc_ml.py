@@ -27,7 +27,7 @@ LSSC as core
 
 class LSSC(object):
 
-	def __init__(self, filepath=None, image_string=None, is_bounding=True, n_lssc_rows=70, n_lssc_columns=70):
+	def __init__(self, filepath=None, image_string=None, is_bounding=True, n_lssc_rows=50, n_lssc_columns=50):
 		self.read_image_as_mat(filepath, image_string, is_bounding, n_lssc_rows, n_lssc_columns)
 
 		self.is_lssc_flag = True
@@ -47,8 +47,15 @@ class LSSC(object):
 			image_binary = self.bounding_image(image_binary)
 		image_out = self.resize_by_grid(image_binary, n_row=n_lssc_rows, n_column=n_lssc_columns, non_zero_val=1)
 
-		# image_show(image_out)
-		# image_out = np.where(image_out < 128, image_out, 1)
+		image_out_show = np.where(image_out > 0, image_out, 255)
+		# show_image(image_out_show)
+		cv2.imwrite(DIR_STD_SHAPE.path_join("{size}*{size}.grid_resize.jpg".format(size=n_lssc_rows)), image_out_show)
+
+		image_resized = cv2.resize(image_binary, (n_lssc_rows, n_lssc_columns)) 
+		# show_image(image_resized)
+		cv2.imwrite(DIR_STD_SHAPE.path_join("{size}*{size}.resize.jpg".format(size=n_lssc_rows)), image_resized)
+
+
 		# print image_out
 		self.shape_mat = image_out
 		self.shape_pixels = self.find_shape_pixels(self.shape_mat)
@@ -133,7 +140,8 @@ class LSSC(object):
 		dist_arr = np.where(dist_arr > 0, dist_arr, 0.5)
 
 		# how to make dist_arr sensitive to shape change
-		sim = np.sum( (1.0/(dist_arr**2)) )**0.5
+		# sim = np.sum( (1.0/(dist_arr**1)) )**1 # dont use this unstable deveil
+		sim = np.sum( dist_arr )**0.5
 		return sim
 
 def create_lssc_n_jobs(dirx, n_jobs=4, is_bounding=True):
@@ -220,7 +228,7 @@ def load_lssc_arr(filepath_arr, lssc_params={}, n_jobs=4):
 		for x in result:
 			lssc_arr.extend(x)
 
-	elif n_jobs==1:
+	elif n_jobs == 1:
 		lssc_arr = load_lssc_process(dict(filepath_arr=filepath_arr,  lssc_params=lssc_params, task_index=1))["lssc_arr"]
 
 	else:
@@ -259,7 +267,7 @@ def convert_lssc_to_vec_arr(lssc_arr, std_lssc_arr, n_jobs=4):
 		for x in result:
 			lssc_vec_arr.extend(x)
 
-	elif n_jobs==1:
+	elif n_jobs == 1:
 		lssc_vec_arr = convert_lssc_to_vec_process(dict(lssc_arr=lssc_arr, std_lssc_arr=std_lssc_arr, task_index=1))["lssc_vec_arr"]
 
 	else:
@@ -370,6 +378,7 @@ def fit_model_by_dir(sample_dir_or_path):
 	print X, Y
 
 	label_count = gen_label_count(sample_labels)
+	print "label_count:",label_count
 	n_neighbors = min(label_count.items(), key=lambda x: x[1])[1]
 
 	clf = KNC(n_neighbors=n_neighbors, weights="distance", algorithm="brute")
@@ -382,7 +391,8 @@ def predict_by_model(model, predict_dir):
 	predict_filepath_arr = get_dir_filepath_arr(predict_dir)
 	clf = model["clf"]
 	lssc_ml = model["lssc_ml"]
-	x = lssc_ml.transform(predict_filepath_arr)
+	x = lssc_ml.transform(predict_filepath_arr, lssc_params={"is_bounding":True, "n_lssc_rows":60, "n_lssc_columns":60})
+	print "pred_x:",x
 	predict_y = clf.predict(x)[0]
 	return predict_y
 
@@ -400,9 +410,8 @@ def show_image(image):
 
 def test_LSSC():
 	# print LSSC(DIR_STD_SHAPE.path_join("0.jpg")).shape_mat
-	std_lssc_0 = LSSC(DIR_STD_SHAPE.path_join("0.jpg"))
-	sample_lssc_0 = LSSC(DIR_SAMPLE_SHAPE.path_join("0.1.jpg"))
-	print sample_lssc_0.shape_mat
+	std_lssc_0 = LSSC(DIR_STD_SHAPE.path_join("wo.jpg"), n_lssc_rows=30, n_lssc_columns=30 )
+	print std_lssc_0.shape_mat
 
 def test_LSSC_ML():
 	lssc_ml = LSSC_ML(n_jobs=4)
@@ -418,6 +427,6 @@ def test_LSSC_ML():
 
 
 if __name__ == '__main__':
-	# test_LSSC()
-	test_LSSC_ML()
+	test_LSSC()
+	# test_LSSC_ML()
 
